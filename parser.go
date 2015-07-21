@@ -7,11 +7,12 @@ import (
 	"golang.org/x/net/html"
 )
 
-type TemperaturesNotifier func(string)
+type Notifier func(string)
 
-func parsePage(body io.Reader, temperaturesNotifier TemperaturesNotifier) error {
+func parsePage(body io.Reader, temperaturesNotifier Notifier, summaryNotifier Notifier) error {
 	z := html.NewTokenizer(body)
 	processingTemperatures := false
+	processingSummary := false
 	for {
 		tokenType := z.Next()
 		switch tokenType {
@@ -26,6 +27,22 @@ func parsePage(body io.Reader, temperaturesNotifier TemperaturesNotifier) error 
 				for _, attribute := range token.Attr {
 					if attribute.Key == "class" && attribute.Val == "ac_temp" {
 						processingTemperatures = true
+						break
+					}
+					if attribute.Key == "class" && attribute.Val == "ac_picto" {
+						processingSummary = true
+						break
+					}
+				}
+			}
+			break
+		case html.SelfClosingTagToken:
+			if processingSummary {
+				token := z.Token()
+				for _, attribute := range token.Attr {
+					if attribute.Key == "title" {
+						processingSummary = false
+						summaryNotifier(strings.TrimSpace(attribute.Val))
 						break
 					}
 				}

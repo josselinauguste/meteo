@@ -4,6 +4,7 @@ import "net/http"
 
 type Forecast struct {
 	Temperatures string
+	Summary      string
 }
 
 func GetForecast() (*Forecast, error) {
@@ -16,7 +17,10 @@ func GetForecast() (*Forecast, error) {
 	temperaturesNotifier := func(temperatures string) {
 		forecast.Temperatures = temperatures
 	}
-	err = parsePage(response.Body, temperaturesNotifier)
+	summaryNotifier := func(summary string) {
+		forecast.Summary = summary
+	}
+	err = parsePage(response.Body, temperaturesNotifier, summaryNotifier)
 	if err != nil {
 		return nil, err
 	}

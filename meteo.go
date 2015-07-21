@@ -1,11 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func main() {
 	forecast, err := GetForecast()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Temperature : %v", forecast.Temperatures)
+	fmt.Printf("Matin : %v, %v", forecast.Temperatures, strings.ToLower(forecast.Summary))
 }

@@ -20,5 +20,8 @@ func TestGetForecast(t *testing.T) {
 		if matched, _ := regexp.MatchString("^\\d{1,2}/\\d{1,2} °C$", forecast.Temperatures); !matched {
 			t.Errorf("temperatures has an invalid format: %v", forecast.Temperatures)
 		}
+    if forecast.Summary == "" {
+			t.Error("summary should be set")
+		}
 	}
 }
