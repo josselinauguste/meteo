@@ -18,14 +18,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	formatDailyForecast(os.Stdout, *dailyForecast)
-}
-
-func formatDailyForecast(writer io.Writer, dailyForecast DailyForecast) {
-	for i, forecast := range dailyForecast.Forecasts {
-		formatForecast(writer, forecast, i)
-	}
-	fmt.Fprintln(writer, dailyForecast.Summary)
+	formatDailyForecast(os.Stdout, day, *dailyForecast)
 }
 
 func getDay() int {
@@ -36,6 +29,29 @@ func getDay() int {
 		}
 	}
 	return 0
+}
+
+func formatDailyForecast(writer io.Writer, day int, dailyForecast DailyForecast) {
+	formatHeader(writer, day)
+	for i, forecast := range dailyForecast.Forecasts {
+		formatForecast(writer, forecast, i)
+	}
+	fmt.Fprintln(writer, dailyForecast.Summary)
+}
+
+func formatHeader(writer io.Writer, day int) {
+	var message string
+	switch day {
+	case 0:
+		message = "Aujourd'hui"
+	case 1:
+		message = "Demain"
+	default:
+		message = "Dans " + strconv.Itoa(day) + " jours"
+	}
+	fmt.Fprintln(writer)
+	fmt.Fprintln(writer, " -- ", message, " --")
+	fmt.Fprintln(writer)
 }
 
 func formatForecast(writer io.Writer, forecast Forecast, i int) {

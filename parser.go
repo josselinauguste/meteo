@@ -64,7 +64,6 @@ func (parser *ForecastsParser) ParsePage(body io.Reader) error {
 					}
 				}
 			}
-			break
 		case html.SelfClosingTagToken:
 			if processingSummary {
 				token := z.Token()
@@ -76,7 +75,6 @@ func (parser *ForecastsParser) ParsePage(body io.Reader) error {
 					}
 				}
 			}
-			break
 		case html.TextToken:
 			if processingTemperatures {
 				processingTemperatures = false
@@ -88,7 +86,6 @@ func (parser *ForecastsParser) ParsePage(body io.Reader) error {
 				processingToday = false
 				parser.todayFound(string(z.Text()))
 			}
-			break
 		}
 	}
 }
