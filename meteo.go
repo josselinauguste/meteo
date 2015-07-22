@@ -5,10 +5,14 @@ import (
 	"strings"
 )
 
+var daySpliceNames = [...]string{"Matin", "Après-midi", "Soirée", "Nuit"}
+
 func main() {
-	forecast, err := GetForecast()
+	dailyForecast, err := GetDailyForecast()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Matin : %v, %v", forecast.Temperatures, strings.ToLower(forecast.Summary))
+	for i, forecast := range dailyForecast.Forecasts {
+		fmt.Printf("%v : %v, %v\n", daySpliceNames[i], forecast.Temperatures, strings.ToLower(forecast.Summary))
+	}
 }

@@ -7,10 +7,20 @@ import (
 	"golang.org/x/net/html"
 )
 
-type Notifier func(string)
+type ForecastsParser struct {
+	buildedForecast *Forecast
+	Forecasts       []Forecast
+}
 
-func parsePage(body io.Reader, temperaturesNotifier Notifier, summaryNotifier Notifier) error {
+func NewForecastsParser() *ForecastsParser {
+	forecastsParser := &ForecastsParser{}
+	forecastsParser.Forecasts = make([]Forecast, 0)
+	return forecastsParser
+}
+
+func (parser *ForecastsParser) ParsePage(body io.Reader) error {
 	z := html.NewTokenizer(body)
+	defer parser.parsingFinished()
 	processingTemperatures := false
 	processingSummary := false
 	for {
@@ -25,6 +35,10 @@ func parsePage(body io.Reader, temperaturesNotifier Notifier, summaryNotifier No
 			token := z.Token()
 			if token.Data == "div" {
 				for _, attribute := range token.Attr {
+					if attribute.Key == "class" && attribute.Val == "ac_picto_ensemble" {
+						parser.foundForecast()
+						break
+					}
 					if attribute.Key == "class" && attribute.Val == "ac_temp" {
 						processingTemperatures = true
 						break
@@ -42,7 +56,7 @@ func parsePage(body io.Reader, temperaturesNotifier Notifier, summaryNotifier No
 				for _, attribute := range token.Attr {
 					if attribute.Key == "title" {
 						processingSummary = false
-						summaryNotifier(strings.TrimSpace(attribute.Val))
+						parser.summaryFound(attribute.Val)
 						break
 					}
 				}
@@ -51,10 +65,32 @@ func parsePage(body io.Reader, temperaturesNotifier Notifier, summaryNotifier No
 		case html.TextToken:
 			if processingTemperatures {
 				processingTemperatures = false
-				temperaturesNotifier(strings.TrimSpace(string(z.Text())))
-				return nil
+				parser.temperaturesFound(string(z.Text()))
 			}
 			break
 		}
 	}
+}
+
+func (parser *ForecastsParser) foundForecast() {
+	parser.addForecast(parser.buildedForecast)
+	parser.buildedForecast = &Forecast{}
+}
+
+func (parser *ForecastsParser) parsingFinished() {
+	parser.addForecast(parser.buildedForecast)
+}
+
+func (parser *ForecastsParser) addForecast(forecast *Forecast) {
+	if forecast != nil {
+		parser.Forecasts = append(parser.Forecasts, *forecast)
+	}
+}
+
+func (parser *ForecastsParser) temperaturesFound(value string) {
+	parser.buildedForecast.Temperatures = strings.TrimSpace(value)
+}
+
+func (parser *ForecastsParser) summaryFound(value string) {
+	parser.buildedForecast.Summary = strings.TrimSpace(value)
 }

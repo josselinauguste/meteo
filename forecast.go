@@ -7,22 +7,24 @@ type Forecast struct {
 	Summary      string
 }
 
-func GetForecast() (*Forecast, error) {
+type DailyForecast struct {
+	Forecasts []Forecast
+}
+
+func NewDailyForecast(forecasts []Forecast) *DailyForecast {
+	return &DailyForecast{forecasts}
+}
+
+func GetDailyForecast() (*DailyForecast, error) {
 	response, err := http.Get("http://www.meteo-bordeaux.com")
 	defer response.Body.Close()
 	if err != nil {
 		return nil, err
 	}
-	forecast := &Forecast{}
-	temperaturesNotifier := func(temperatures string) {
-		forecast.Temperatures = temperatures
-	}
-	summaryNotifier := func(summary string) {
-		forecast.Summary = summary
-	}
-	err = parsePage(response.Body, temperaturesNotifier, summaryNotifier)
+	parser := NewForecastsParser()
+	err = parser.ParsePage(response.Body)
 	if err != nil {
 		return nil, err
 	}
-	return forecast, nil
+	return NewDailyForecast(parser.Forecasts), nil
 }
