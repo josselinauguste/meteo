@@ -14,6 +14,9 @@ func TestGetForecast(t *testing.T) {
 	if dailyForecast == nil {
 		t.Error("forecast should not be nil")
 	} else {
+		if dailyForecast.Summary == "" {
+			t.Error("daily summary should be set")
+		}
 		if len(dailyForecast.Forecasts) != 4 {
 			t.Errorf("a day counts 4 forecasts, not %v", len(dailyForecast.Forecasts))
 		} else {

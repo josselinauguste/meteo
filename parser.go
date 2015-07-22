@@ -10,6 +10,7 @@ import (
 type ForecastsParser struct {
 	buildedForecast *Forecast
 	Forecasts       []Forecast
+	GlobalSummary   string
 }
 
 func NewForecastsParser() *ForecastsParser {
@@ -23,8 +24,12 @@ func (parser *ForecastsParser) ParsePage(body io.Reader) error {
 	defer parser.parsingFinished()
 	processingTemperatures := false
 	processingSummary := false
+	globalSummaryDeepness := 0
 	for {
 		tokenType := z.Next()
+		if globalSummaryDeepness > 0 {
+			globalSummaryDeepness++
+		}
 		switch tokenType {
 		case html.ErrorToken:
 			if z.Err() == io.EOF {
@@ -37,6 +42,10 @@ func (parser *ForecastsParser) ParsePage(body io.Reader) error {
 				for _, attribute := range token.Attr {
 					if attribute.Key == "class" && attribute.Val == "ac_picto_ensemble" {
 						parser.foundForecast()
+						break
+					}
+					if attribute.Key == "class" && attribute.Val == "ac_com" {
+						globalSummaryDeepness = 1
 						break
 					}
 					if attribute.Key == "class" && attribute.Val == "ac_temp" {
@@ -66,6 +75,9 @@ func (parser *ForecastsParser) ParsePage(body io.Reader) error {
 			if processingTemperatures {
 				processingTemperatures = false
 				parser.temperaturesFound(string(z.Text()))
+			} else if globalSummaryDeepness >= 4 {
+				globalSummaryDeepness = 0
+				parser.globalSummaryFound(string(z.Text()))
 			}
 			break
 		}
@@ -93,4 +105,8 @@ func (parser *ForecastsParser) temperaturesFound(value string) {
 
 func (parser *ForecastsParser) summaryFound(value string) {
 	parser.buildedForecast.Summary = strings.TrimSpace(value)
+}
+
+func (parser *ForecastsParser) globalSummaryFound(value string) {
+	parser.GlobalSummary = strings.TrimSpace(value)
 }

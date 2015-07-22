@@ -16,9 +16,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	formatDailyForecast(os.Stdout, *dailyForecast)
+}
+
+func formatDailyForecast(writer io.Writer, dailyForecast DailyForecast) {
 	for i, forecast := range dailyForecast.Forecasts {
-		formatForecast(os.Stdout, forecast, i)
+		formatForecast(writer, forecast, i)
 	}
+	fmt.Fprintln(writer, dailyForecast.Summary)
 }
 
 func formatForecast(writer io.Writer, forecast Forecast, i int) {

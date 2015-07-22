@@ -9,10 +9,11 @@ type Forecast struct {
 
 type DailyForecast struct {
 	Forecasts []Forecast
+	Summary   string
 }
 
-func NewDailyForecast(forecasts []Forecast) *DailyForecast {
-	return &DailyForecast{forecasts}
+func NewDailyForecast(forecasts []Forecast, summary string) *DailyForecast {
+	return &DailyForecast{forecasts, summary}
 }
 
 func GetDailyForecast() (*DailyForecast, error) {
@@ -26,5 +27,5 @@ func GetDailyForecast() (*DailyForecast, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewDailyForecast(parser.Forecasts), nil
+	return NewDailyForecast(parser.Forecasts, parser.GlobalSummary), nil
 }
