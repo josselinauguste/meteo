@@ -50,11 +50,11 @@ func (parser *ForecastsParser) ParsePage(body io.Reader) error {
 						globalSummaryDeepness = 1
 						break
 					}
-					if attribute.Key == "class" && attribute.Val == "ac_temp" {
+					if attribute.Key == "class" && (attribute.Val == "ac_temp" || attribute.Val == "ac_temp_plus") {
 						processingTemperatures = true
 						break
 					}
-					if attribute.Key == "class" && attribute.Val == "ac_picto" {
+					if attribute.Key == "class" && (attribute.Val == "ac_picto" || attribute.Val == "ac_picto_plus") {
 						processingSummary = true
 						break
 					}

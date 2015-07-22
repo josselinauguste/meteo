@@ -31,7 +31,7 @@ func TestGetForecast(t *testing.T) {
 	if err != nil {
 		t.Errorf("error should be nil, not %v", err)
 	}
-	assertDailyForecast(t, dailyForecast)
+	assertDailyForecast(t, dailyForecast, 4)
 }
 
 func TestGetForecastForNextDay(t *testing.T) {
@@ -40,18 +40,27 @@ func TestGetForecastForNextDay(t *testing.T) {
 	if err != nil {
 		t.Errorf("error should be nil, not %v", err)
 	}
-	assertDailyForecast(t, dailyForecast)
+	assertDailyForecast(t, dailyForecast, 4)
 }
 
-func assertDailyForecast(t *testing.T, dailyForecast *DailyForecast) {
+func TestGetForecastForIn2Days(t *testing.T) {
+	dailyForecast, err := GetDailyForecast(2)
+
+	if err != nil {
+		t.Errorf("error should be nil, not %v", err)
+	}
+	assertDailyForecast(t, dailyForecast, 2)
+}
+
+func assertDailyForecast(t *testing.T, dailyForecast *DailyForecast, forecastsExpected int) {
 	if dailyForecast == nil {
 		t.Error("forecast should not be nil")
 	} else {
 		if dailyForecast.Summary == "" {
 			t.Error("daily summary should be set")
 		}
-		if len(dailyForecast.Forecasts) != 4 {
-			t.Errorf("a day counts 4 forecasts, not %v", len(dailyForecast.Forecasts))
+		if len(dailyForecast.Forecasts) != forecastsExpected {
+			t.Errorf("a day counts %v forecasts, not %v", forecastsExpected, len(dailyForecast.Forecasts))
 		} else {
 			forecast := dailyForecast.Forecasts[0]
 			if forecast.Temperatures == "" {
