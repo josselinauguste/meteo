@@ -6,17 +6,44 @@ import (
 )
 
 func TestGetSource(t *testing.T) {
-	if getSource() != "http://www.meteo-bordeaux.com" {
+	source, _ := getSource(0)
+
+	if source != "http://www.meteo-bordeaux.com" {
 		t.Error("Source is not as expected")
 	}
 }
 
-func TestGetForecast(t *testing.T) {
-	dailyForecast, err := GetDailyForecast()
+func TestGetSourceForNextDay(t *testing.T) {
+	source, err := getSource(1)
 
 	if err != nil {
 		t.Errorf("error should be nil, not %v", err)
 	}
+	matched, err := regexp.MatchString("http://www.meteo-bordeaux.com/accueil/jour_plus/\\d+", source)
+	if !matched || err != nil {
+		t.Errorf("Source is not as expected: %v", source)
+	}
+}
+
+func TestGetForecast(t *testing.T) {
+	dailyForecast, err := GetDailyForecast(0)
+
+	if err != nil {
+		t.Errorf("error should be nil, not %v", err)
+	}
+	assertDailyForecast(t, dailyForecast)
+}
+
+func TestGetForecastForNextDay(t *testing.T) {
+	dailyForecast, err := GetDailyForecast(1)
+
+	if err != nil {
+		t.Errorf("error should be nil, not %v", err)
+	}
+	assertDailyForecast(t, dailyForecast)
+}
+
+func assertDailyForecast(t *testing.T, dailyForecast *DailyForecast) {
 	if dailyForecast == nil {
 		t.Error("forecast should not be nil")
 	} else {

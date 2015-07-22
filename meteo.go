@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"unicode/utf8"
 
 	"github.com/ttacon/chalk"
@@ -12,7 +13,8 @@ import (
 var daySpliceNames = [...]string{"Matin", "Après-midi", "Soirée", "Nuit"}
 
 func main() {
-	dailyForecast, err := GetDailyForecast()
+	day := getDay()
+	dailyForecast, err := GetDailyForecast(day)
 	if err != nil {
 		panic(err)
 	}
@@ -24,6 +26,16 @@ func formatDailyForecast(writer io.Writer, dailyForecast DailyForecast) {
 		formatForecast(writer, forecast, i)
 	}
 	fmt.Fprintln(writer, dailyForecast.Summary)
+}
+
+func getDay() int {
+	if len(os.Args) > 1 {
+		day, err := strconv.Atoi(os.Args[1])
+		if err == nil {
+			return day
+		}
+	}
+	return 0
 }
 
 func formatForecast(writer io.Writer, forecast Forecast, i int) {

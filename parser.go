@@ -11,6 +11,7 @@ type ForecastsParser struct {
 	buildedForecast *Forecast
 	Forecasts       []Forecast
 	GlobalSummary   string
+	today           string
 }
 
 func NewForecastsParser() *ForecastsParser {
@@ -25,6 +26,7 @@ func (parser *ForecastsParser) ParsePage(body io.Reader) error {
 	processingTemperatures := false
 	processingSummary := false
 	globalSummaryDeepness := 0
+	processingToday := false
 	for {
 		tokenType := z.Next()
 		if globalSummaryDeepness > 0 {
@@ -38,7 +40,7 @@ func (parser *ForecastsParser) ParsePage(body io.Reader) error {
 			return z.Err()
 		case html.StartTagToken:
 			token := z.Token()
-			if token.Data == "div" {
+			if token.Data == "div" || token.Data == "span" {
 				for _, attribute := range token.Attr {
 					if attribute.Key == "class" && attribute.Val == "ac_picto_ensemble" {
 						parser.foundForecast()
@@ -54,6 +56,10 @@ func (parser *ForecastsParser) ParsePage(body io.Reader) error {
 					}
 					if attribute.Key == "class" && attribute.Val == "ac_picto" {
 						processingSummary = true
+						break
+					}
+					if attribute.Key == "id" && attribute.Val == "date_accueil" && parser.today == "" {
+						processingToday = true
 						break
 					}
 				}
@@ -78,6 +84,9 @@ func (parser *ForecastsParser) ParsePage(body io.Reader) error {
 			} else if globalSummaryDeepness >= 4 {
 				globalSummaryDeepness = 0
 				parser.globalSummaryFound(string(z.Text()))
+			} else if processingToday {
+				processingToday = false
+				parser.todayFound(string(z.Text()))
 			}
 			break
 		}
@@ -109,4 +118,8 @@ func (parser *ForecastsParser) summaryFound(value string) {
 
 func (parser *ForecastsParser) globalSummaryFound(value string) {
 	parser.GlobalSummary = strings.TrimSpace(value)
+}
+
+func (parser *ForecastsParser) todayFound(value string) {
+	parser.today = strings.TrimSpace(value)
 }

@@ -16,8 +16,11 @@ package main
 
 import "net/http"
 
-func GetDailyForecast() (*DailyForecast, error) {
-	source := getSource()
+func GetDailyForecast(day int) (*DailyForecast, error) {
+	source, err := getSource(day)
+	if err != nil {
+		return nil, err
+	}
 	parser, err := parseSource(source)
 	if err != nil {
 		return nil, err
@@ -25,8 +28,16 @@ func GetDailyForecast() (*DailyForecast, error) {
 	return NewDailyForecast(parser.Forecasts, parser.GlobalSummary), nil
 }
 
-func getSource() string {
-	return "http://www.meteo-bordeaux.com"
+func getSource(day int) (string, error) {
+	currentSource := "http://www.meteo-bordeaux.com"
+	for i := 0; i < day; i++ {
+		parser, err := parseSource(currentSource)
+		if err != nil {
+			return "", err
+		}
+		currentSource = "http://www.meteo-bordeaux.com/accueil/jour_plus/" + parser.today
+	}
+	return currentSource, nil
 }
 
 func parseSource(source string) (*ForecastsParser, error) {
